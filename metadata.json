@@ -1,0 +1,7 @@
+{
+  "name": "Nexus AI Chat",
+  "description": "A sophisticated AI chatbot interface with sidebar history, advanced model selection, and dynamic layout transitions.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
