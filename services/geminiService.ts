@@ -10,18 +10,15 @@ interface GenerateOptions {
 }
 
 /**
- * Connects to the local FastAPI backend via POST.
- * Endpoint: POST http://127.0.0.1:8000/generate
- * Body: { "prompt": "...", "tokens": 500 }
+ * Connects to the backend via POST.
+ * Endpoint: /generate
  */
 export const streamChatResponse = async (
-  { prompt, history }: GenerateOptions,
+  { prompt, history, model, useSearch, useDeepThink, images }: GenerateOptions,
   onChunk: (text: string) => void
 ): Promise<string> => {
   try {
     // 1. Prepare the Context
-    // Bigram models (and most raw LLMs) expect a single string. 
-    // We concatenate the history to give the model "memory".
     const conversationHistory = history
       .map(msg => `${msg.role === 'user' ? 'User' : 'Model'}: ${msg.text}`)
       .join('\n');
@@ -29,8 +26,8 @@ export const streamChatResponse = async (
     const fullPrompt = `${conversationHistory}\nUser: ${prompt}\nModel:`;
 
     // 2. Configuration
-    // We use localhost to avoid some IP binding issues on certain machines
-    const endpoint = 'http://127.0.0.1:8000/generate'; 
+    // Use relative path so it works when served by the Python backend
+    const endpoint = '/generate'; 
 
     // 3. Make the POST Request
     const response = await fetch(endpoint, {
@@ -41,7 +38,10 @@ export const streamChatResponse = async (
       },
       body: JSON.stringify({
         prompt: fullPrompt,
-        tokens: 500
+        model: model,
+        search: useSearch,
+        thinking: useDeepThink,
+        images: images
       })
     });
 
