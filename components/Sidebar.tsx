@@ -1,5 +1,5 @@
 import React from 'react';
-import { MessageSquare, Settings, User, LogOut, Plus, PanelLeftClose } from 'lucide-react';
+import { MessageSquare, Settings, User, LogOut, Plus, PanelLeftClose, Book } from 'lucide-react';
 import { ChatSession } from '../types';
 
 interface SidebarProps {
@@ -31,20 +31,29 @@ export const Sidebar: React.FC<SidebarProps> = ({
         className={`fixed md:static inset-y-0 left-0 z-30 bg-[#171717] flex flex-col transition-all duration-300 ease-in-out border-r border-gray-800 ${isOpen ? 'w-[260px] translate-x-0' : '-translate-x-full w-0 opacity-0 overflow-hidden'}`}
       >
         {/* Header */}
-        <div className="p-3 flex items-center justify-between gap-2">
+        <div className="p-3 flex flex-col gap-2">
+          <div className="flex items-center justify-between gap-2">
+            <button 
+              onClick={onNewChat}
+              className="flex-1 flex items-center gap-2 bg-[#212121] hover:bg-[#2f2f2f] text-gray-200 px-3 py-2 rounded-lg transition-colors text-sm font-medium border border-gray-700"
+            >
+              <Plus size={16} />
+              <span>New chat</span>
+            </button>
+            <button 
+              onClick={toggleSidebar} 
+              className="p-2 text-gray-400 hover:text-white hover:bg-[#2f2f2f] rounded-lg transition-colors"
+              title="Close sidebar"
+            >
+              <PanelLeftClose size={20} />
+            </button>
+          </div>
+
           <button 
-            onClick={onNewChat}
-            className="flex-1 flex items-center gap-2 bg-[#212121] hover:bg-[#2f2f2f] text-gray-200 px-3 py-2 rounded-lg transition-colors text-sm font-medium border border-gray-700"
+            className="w-full flex items-center gap-2 text-gray-300 hover:text-white hover:bg-[#2f2f2f] px-3 py-2 rounded-lg transition-colors text-sm"
           >
-            <Plus size={16} />
-            <span>New chat</span>
-          </button>
-          <button 
-            onClick={toggleSidebar} 
-            className="p-2 text-gray-400 hover:text-white hover:bg-[#2f2f2f] rounded-lg transition-colors"
-            title="Close sidebar"
-          >
-            <PanelLeftClose size={20} />
+            <Book size={18} />
+            <span>My Projects</span>
           </button>
         </div>
 
