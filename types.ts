@@ -26,6 +26,5 @@ export interface ModelConfig {
 }
 
 export const AVAILABLE_MODELS: ModelConfig[] = [
-  { modelName: 'bigram-local', displayName: 'Local Bigram Model', isThinkingSupported: false },
-  { modelName: 'bigram-local-large', displayName: 'Local Bigram (Large)', isThinkingSupported: false },
+  { modelName: 'tinyllama-1.1b', displayName: 'TinyLlama 1.1B', isThinkingSupported: false },
 ];

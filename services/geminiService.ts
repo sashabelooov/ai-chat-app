@@ -1,5 +1,12 @@
 import { Message } from '../types';
 
+// =================================================================================
+// 🔧 CONFIGURATION
+// Change this URL whenever you restart ngrok
+// =================================================================================
+const API_BASE_URL = 'https://7983a3acb2e2.ngrok-free.app'; 
+const API_ENDPOINT = `${API_BASE_URL}/generate`;
+
 interface GenerateOptions {
   model: string;
   prompt: string;
@@ -11,7 +18,6 @@ interface GenerateOptions {
 
 /**
  * Connects to the backend via POST.
- * Endpoint: /generate
  */
 export const streamChatResponse = async (
   { prompt, history, model, useSearch, useDeepThink, images }: GenerateOptions,
@@ -19,29 +25,28 @@ export const streamChatResponse = async (
 ): Promise<string> => {
   try {
     // 1. Prepare the Context
+    // We format the history so the model understands the conversation context.
     const conversationHistory = history
       .map(msg => `${msg.role === 'user' ? 'User' : 'Model'}: ${msg.text}`)
       .join('\n');
     
-    const fullPrompt = `${conversationHistory}\nUser: ${prompt}\nModel:`;
+    // Combine history with the new prompt
+    const fullInput = conversationHistory 
+      ? `${conversationHistory}\nUser: ${prompt}`
+      : `User: ${prompt}`;
 
-    // 2. Configuration
-    // Use relative path so it works when served by the Python backend
-    const endpoint = '/generate'; 
-
-    // 3. Make the POST Request
-    const response = await fetch(endpoint, {
+    // 2. Make the POST Request
+    const response = await fetch(API_ENDPOINT, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Accept': 'text/plain',
+        'Accept': 'application/json',
+        // This header is required to bypass the ngrok "Visit Site" warning page
+        'ngrok-skip-browser-warning': 'true',
       },
+      // The backend expects: class Query(BaseModel): text: str
       body: JSON.stringify({
-        prompt: fullPrompt,
-        model: model,
-        search: useSearch,
-        thinking: useDeepThink,
-        images: images
+        text: fullInput
       })
     });
 
@@ -54,27 +59,30 @@ export const streamChatResponse = async (
       throw new Error(`Server Error (${response.status}): ${errorDetails}`);
     }
 
-    if (!response.body) {
-      throw new Error("No response body received from server.");
+    // 3. Handle Response
+    // The backend returns: { "response": "..." }
+    const data = await response.json();
+    const aiText = data.response;
+
+    if (!aiText) {
+      throw new Error("Empty response received from server.");
     }
 
-    // 4. Handle the Stream
-    const reader = response.body.getReader();
-    const decoder = new TextDecoder();
-    let fullText = "";
+    // 4. Simulate Streaming (Typewriter Effect)
+    // Since the backend returns the full text at once, we break it into chunks
+    // and feed it to the UI with a delay to mimic the generation process.
+    
+    const chunkSize = 3; // Number of characters per chunk
+    const delayMs = 15;  // Delay between chunks in milliseconds
 
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      
-      const chunk = decoder.decode(value, { stream: true });
-      if (chunk) {
-        fullText += chunk;
-        onChunk(chunk);
-      }
+    for (let i = 0; i < aiText.length; i += chunkSize) {
+      const chunk = aiText.slice(i, i + chunkSize);
+      onChunk(chunk);
+      // Wait for a tiny bit to simulate typing
+      await new Promise(resolve => setTimeout(resolve, delayMs));
     }
 
-    return fullText;
+    return aiText;
 
   } catch (error) {
     console.error("API Connection Error:", error);
